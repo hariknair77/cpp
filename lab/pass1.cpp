@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <iterator>
+#include <iomanip>
 using namespace std;
 
 struct opc{
@@ -61,13 +62,6 @@ int main(){
         op_.hex = hexval;
         optab[op] = op_;
     }
-    // for(auto &x:optab)
-    //     cout<<x.first<<" "<<x.second.len<<" "<<x.second.hex<<endl;
-    // auto it = optab.find("ADD");
-    // if(it!=optab.end())
-    //     cout<<"found";
-    // else
-        // cout<<"oops";    
     ofstream temp("temp",ios::trunc);
     loop : cout<<"Enter file name: ";
     cin>>file;
@@ -80,7 +74,8 @@ int main(){
     lc++;
     split(line);
     if(opcode == "START"){
-        temp<<label<<" "<<opcode<<" "<<operand<<endl;
+        temp<<label<<" "<<opcode<<" ";
+        temp<<setfill('0')<<setw(5)<<operand<<endl;
         label.clear();
         opcode.clear();
         operand.clear();
@@ -139,7 +134,8 @@ int main(){
         }
         else if(opcode == "END"){
             def_lit(locctr);
-            temp<<hex<<locctr<<" "<<opcode<<" "<<operand<<endl;
+            temp<<setfill('0')<<setw(5)<<hex<<prev_loc<<" ";
+            temp<<opcode<<" "<<operand<<endl;
             break;
         }
         else
@@ -150,19 +146,23 @@ int main(){
                 stringstream tohex;
                 tohex<<hex<<prev_loc;
                 symtab[label] = tohex.str();
-
             }
         }
-            
-        temp<<hex<<prev_loc<<" "<<opcode<<" "<<operand<<endl;
+        temp<<setfill('0')<<setw(5)<<hex<<prev_loc<<" ";
+        temp<<opcode<<" "<<operand<<endl;
         prev_loc = locctr;
     }
 
     ofstream lit_tab("littab",ios::trunc);
     for(auto &i:littab)
         lit_tab<<i.sym<<" "<<i.loc<<endl;
+    
     ofstream sym_tab("symtab",ios::trunc);
     for(auto &i:symtab)
         sym_tab<<i.first<<" "<<i.second<<endl;
+
+    ofstream prg_len("prglen");
+        prg_len<<setfill('0')<<setw(4)<<hex<<locctr;
     return 0;
 }
+

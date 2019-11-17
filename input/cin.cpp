@@ -13,7 +13,7 @@ int main(){
         cin.ignore(10000,'\n'); // remove wood blocks from stream 
         goto loop;
     }
-    cin.ignore(); //getline default delim is '\n' so ignore it igonre(1,'\n')
+    cin.ignore(1000,'\n'); //getline default delim is '\n' so ignore it igonre(1,'\n')
     cout<<"Enter your name :";
     getline(cin,name); //space seperated data 
     
