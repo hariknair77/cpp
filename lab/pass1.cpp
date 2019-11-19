@@ -6,58 +6,82 @@
 #include <map>
 #include <iterator>
 #include <iomanip>
-using namespace std;
+#include <ctype.h>
+#include <boost/algorithm/string.hpp>
 
+using namespace std;
+using namespace boost::algorithm;
+
+//decimal to hex..
+string toHex(int n){
+    stringstream s;
+    s<<setfill('0')<<setw(5)<<hex<<n;
+    return s.str();
+}
+
+//opcode structure
 struct opc{
     int len;
     string hex;
 };
+//literal structure
 struct literal{
     string sym,value,loc;
     int len,flag;
 };
+struct symbol{
+    string loc;
+    char flag;
+};
+map<string,opc> optab;   //opcode table
+map<string,symbol>symtab; //symbol table
+
+//define literal....
 vector<literal>littab;
 void def_lit(int &locctr){
     for(auto &i:littab)
         if(i.flag == 0){
             i.flag = 1;
-            stringstream tohex;
-            tohex<<hex<<locctr;
-            i.loc = tohex.str();
+            i.loc = toHex(locctr);
             locctr += i.len;
         }
 }
-vector<string> l;
-map<string,struct opc> optab;
+//split line...
+vector<string> tokens;
 string label,opcode,operand;
 void split(string line){
-    string tok;
-    stringstream line_(line);
-    l.clear();
+    tokens.clear();
     label.clear();
     opcode.clear();
     operand.clear();
-    while(line_>>tok)
-        l.push_back(tok);
-    if(l.size() == 3){
-        label = l.at(0);
-        opcode = l.at(1);
-        operand = l.at(2);
+
+    // string tok;
+    // stringstream line_(line);
+    // while(line_>>tok)
+    //     tokens.push_back(tok);
+
+    trim(line);
+    split(tokens,line,is_any_of(" "),token_compress_on);
+
+    if(tokens.size() == 3){
+        label = tokens.at(0);
+        opcode = tokens.at(1);
+        operand = tokens.at(2);
     }
-    else if(l.size() == 2){
-        opcode = l.at(0);
-        operand = l.at(1);
+    else if(tokens.size() == 2){
+        opcode = tokens.at(0);
+        operand = tokens.at(1);
     }
     else
-        opcode = l.at(0);
+        opcode = tokens.at(0);
 }
-map<string,string>symtab;
+
 int main(){
     int e,lc=0,locctr = 0,prev_loc = 0 ;
     string op,op_,len,hexval,file,line;
     ifstream opflie("optab.dat");
     while(opflie>>op>>len>>hexval){
-        struct opc op_;
+        opc op_;
         op_.len = stoi(len);
         op_.hex = hexval;
         optab[op] = op_;
@@ -74,8 +98,7 @@ int main(){
     lc++;
     split(line);
     if(opcode == "START"){
-        temp<<label<<" "<<opcode<<" ";
-        temp<<setfill('0')<<setw(5)<<operand<<endl;
+        temp<<label<<" "<<opcode<<" "<<setfill('0')<<setw(5)<<operand<<endl;
         label.clear();
         opcode.clear();
         operand.clear();
@@ -134,8 +157,7 @@ int main(){
         }
         else if(opcode == "END"){
             def_lit(locctr);
-            temp<<setfill('0')<<setw(5)<<hex<<prev_loc<<" ";
-            temp<<opcode<<" "<<operand<<endl;
+            temp<<toHex(prev_loc)<<' '<<opcode<<" "<<operand<<endl;
             break;
         }
         else
@@ -143,13 +165,25 @@ int main(){
         if(!label.empty()){
             auto sym = symtab.find(label);
             if(sym == symtab.end()){
-                stringstream tohex;
-                tohex<<hex<<prev_loc;
-                symtab[label] = tohex.str();
+                symtab[label].loc = toHex(prev_loc);
+                if(opcode == "EQU"){
+                    auto sym = symtab.find(operand);
+                    if(sym == symtab.end()){
+                        symtab[label].flag = symtab[operand].flag;
+                        symtab[label].loc = symtab[operand].loc;
+                    }
+                    else if(isdigit(operand[0])){
+                        symtab[label].flag = 'A';
+                        symtab[label].loc = operand;
+                    }
+                    else
+                        cout<<"invalid label on "<<lc;
+                }
+                    else
+                        symtab[label].flag = 'R';
             }
         }
-        temp<<setfill('0')<<setw(5)<<hex<<prev_loc<<" ";
-        temp<<opcode<<" "<<operand<<endl;
+        temp<<toHex(prev_loc)<<' '<<opcode<<" "<<operand<<endl;
         prev_loc = locctr;
     }
 
@@ -159,10 +193,10 @@ int main(){
     
     ofstream sym_tab("symtab",ios::trunc);
     for(auto &i:symtab)
-        sym_tab<<i.first<<" "<<i.second<<endl;
+        sym_tab<<i.first<<" "<<i.second.flag<<" "<<i.second.loc<<endl;
 
     ofstream prg_len("prglen");
-        prg_len<<setfill('0')<<setw(4)<<hex<<locctr;
+        prg_len<<toHex(locctr);
     return 0;
 }
 

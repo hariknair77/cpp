@@ -35,10 +35,15 @@ int main(){
     ifstream temp("temp");
     getline(temp,line);
     split(line);
-    if(!label.empty()){
-        obj<<'H'<<'^'<<label<<'^'<<operand<<'^'<<prg_len<<endl;
+    if(opcode == "START"){
+        if(!label.empty())
+            obj<<'H'<<'^'<<label<<'^'<<operand<<'^'<<prg_len<<endl;
+        else
+        
+        getline(temp,line);
+        split(line);
     }
-    else
+    else if(label.empty())
         obj<<'H'<<'^'<<"------"<<'^'<<operand<<'^'<<prg_len<<endl;
 
     while(getline(temp,line)){
