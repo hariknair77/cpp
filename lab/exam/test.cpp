@@ -16,9 +16,7 @@ int main(){
     // ofstream file("optab",ios::binary);
     // file.write((char *)&optab,sizeof(optab));
     // file.close();
-    ifstream infile("optab",ios::binary);
-    infile.read((&optab,sizeof(optab));
-    infile.close();
+    
     for(auto &i:optab)
         cout<<i.first<<' '<<i.second<<endl;
     return 0;

@@ -1,14 +1,5 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <iterator>
-#include <iomanip>
-#include <ctype.h>
+#include <bits/stdc++.h>
 #include <boost/algorithm/string.hpp>
-
 using namespace std;
 using namespace boost::algorithm;
 
@@ -86,7 +77,7 @@ int main(){
         op_.hex = hexval;
         optab[op] = op_;
     }
-    ofstream temp("temp",ios::trunc);
+    ofstream temp("temp");
     loop : cout<<"Enter file name: ";
     cin>>file;
     ifstream input(file);
@@ -199,4 +190,3 @@ int main(){
         prg_len<<toHex(locctr);
     return 0;
 }
-
